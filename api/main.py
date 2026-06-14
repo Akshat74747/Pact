@@ -1,0 +1,28 @@
+import os
+from dotenv import load_dotenv
+from pathlib import Path
+
+load_dotenv(Path(__file__).parent.parent / "frontend" / ".env.local")
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from api.routes import agent, contracts, mcp
+
+app = FastAPI(title="Pact for Splunk API", version="1.0.0")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(agent.router)
+app.include_router(contracts.router)
+app.include_router(mcp.router)
+
+
+@app.get("/health")
+def health():
+    return {"status": "ok", "service": "pact-for-splunk"}

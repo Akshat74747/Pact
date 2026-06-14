@@ -1,0 +1,161 @@
+{
+  "visualizations": {
+    "commitment_pass_rate": {
+      "type": "splunk.bar",
+      "title": "Commitment Pass Rate (Last 24h)",
+      "dataSources": {
+        "primary": "commitment_pass_rate_ds"
+      },
+      "options": {
+        "xField": "commitment_name",
+        "yField": "pass_rate",
+        "seriesColors": ["#53c57a"]
+      }
+    },
+    "violations_over_time": {
+      "type": "splunk.line",
+      "title": "Violations Over Time",
+      "dataSources": {
+        "primary": "violations_over_time_ds"
+      },
+      "options": {
+        "seriesColors": ["#f26a35", "#c84f0a", "#ff6b6b", "#ffa500", "#ff4444"]
+      }
+    },
+    "coverage_gauge": {
+      "type": "splunk.singlevalue",
+      "title": "Contract Coverage %",
+      "dataSources": {
+        "primary": "coverage_ds"
+      },
+      "options": {
+        "majorValue": "> coverage_percentage",
+        "unit": "%",
+        "trendColor": "#53c57a",
+        "backgroundColor": "#1a1a2e"
+      }
+    },
+    "uncovered_tools": {
+      "type": "splunk.table",
+      "title": "Uncovered Tool Calls",
+      "dataSources": {
+        "primary": "uncovered_tools_ds"
+      }
+    },
+    "recent_violations": {
+      "type": "splunk.table",
+      "title": "Recent Violations with Auto-Generated SPL",
+      "dataSources": {
+        "primary": "recent_violations_ds"
+      }
+    },
+    "total_executions": {
+      "type": "splunk.singlevalue",
+      "title": "Total Executions Today",
+      "dataSources": {
+        "primary": "total_executions_ds"
+      },
+      "options": {
+        "majorValue": "> executions",
+        "backgroundColor": "#1a1a2e"
+      }
+    }
+  },
+  "dataSources": {
+    "commitment_pass_rate_ds": {
+      "type": "ds.search",
+      "options": {
+        "query": "index=opsguard sourcetype=\"pact:commitment\" earliest=-24h | stats count as total, sum(eval(if(passed=true,1,0))) as passed by commitment_name | eval pass_rate=round((passed/total)*100,2) | table commitment_name, pass_rate | sort -pass_rate",
+        "queryParameters": {
+          "earliest": "-24h",
+          "latest": "now"
+        }
+      }
+    },
+    "violations_over_time_ds": {
+      "type": "ds.search",
+      "options": {
+        "query": "index=opsguard sourcetype=\"pact:commitment\" passed=false earliest=-24h | timechart span=30m count by commitment_name",
+        "queryParameters": {
+          "earliest": "-24h",
+          "latest": "now"
+        }
+      }
+    },
+    "coverage_ds": {
+      "type": "ds.search",
+      "options": {
+        "query": "index=opsguard sourcetype=\"pact:coverage\" earliest=-1h | sort -_time | head 1 | table coverage_percentage",
+        "queryParameters": {
+          "earliest": "-1h",
+          "latest": "now"
+        }
+      }
+    },
+    "uncovered_tools_ds": {
+      "type": "ds.search",
+      "options": {
+        "query": "index=opsguard sourcetype=\"pact:coverage\" earliest=-1h | sort -_time | head 1 | mvexpand uncovered_tool_calls | table uncovered_tool_calls",
+        "queryParameters": {
+          "earliest": "-1h",
+          "latest": "now"
+        }
+      }
+    },
+    "recent_violations_ds": {
+      "type": "ds.search",
+      "options": {
+        "query": "index=opsguard sourcetype=\"pact:commitment\" passed=false earliest=-24h | table _time, commitment_name, violation_detail, execution_id, investigation_spl | sort -_time | head 20",
+        "queryParameters": {
+          "earliest": "-24h",
+          "latest": "now"
+        }
+      }
+    },
+    "total_executions_ds": {
+      "type": "ds.search",
+      "options": {
+        "query": "index=opsguard sourcetype=\"pact:commitment\" earliest=-24h | dedup execution_id | stats count as executions",
+        "queryParameters": {
+          "earliest": "-24h",
+          "latest": "now"
+        }
+      }
+    }
+  },
+  "layout": {
+    "type": "grid",
+    "options": {
+      "width": 1440,
+      "gutterSize": 8
+    },
+    "structure": [
+      {
+        "item": "commitment_pass_rate",
+        "position": {"x": 0, "y": 0, "w": 720, "h": 300}
+      },
+      {
+        "item": "violations_over_time",
+        "position": {"x": 720, "y": 0, "w": 720, "h": 300}
+      },
+      {
+        "item": "coverage_gauge",
+        "position": {"x": 0, "y": 300, "w": 360, "h": 200}
+      },
+      {
+        "item": "total_executions",
+        "position": {"x": 360, "y": 300, "w": 360, "h": 200}
+      },
+      {
+        "item": "uncovered_tools",
+        "position": {"x": 720, "y": 300, "w": 720, "h": 200}
+      },
+      {
+        "item": "recent_violations",
+        "position": {"x": 0, "y": 500, "w": 1440, "h": 350}
+      }
+    ]
+  },
+  "title": "Pact for Splunk — OpsGuard Contract Observability",
+  "description": "Behavioral contract monitoring for the OpsGuard incident response agent"
+}

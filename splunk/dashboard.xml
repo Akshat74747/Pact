@@ -1,0 +1,117 @@
+<form version="1.1">
+  <label>Pact for Splunk — OpsGuard Contract Observability</label>
+  <description>Behavioral contract monitoring for the OpsGuard incident response agent</description>
+
+  <fieldset submitButton="false" autoRun="true">
+    <input type="time" token="time_range">
+      <label>Time Range</label>
+      <default>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+  </fieldset>
+
+  <row>
+    <panel>
+      <chart>
+        <title>Commitment Pass Rate (Last 24h)</title>
+        <search>
+          <query>index=opsguard sourcetype="pact:commitment" earliest=$time_range.earliest$ latest=$time_range.latest$
+| stats count as total, sum(eval(if(passed=true,1,0))) as passed by commitment_name
+| eval pass_rate=round((passed/total)*100,2)
+| table commitment_name, pass_rate
+| sort -pass_rate</query>
+        </search>
+        <option name="charting.chart">bar</option>
+        <option name="charting.axisTitleX.text">Commitment</option>
+        <option name="charting.axisTitleY.text">Pass Rate (%)</option>
+        <option name="charting.seriesColors">[0x53c57a]</option>
+        <option name="charting.chart.showDataLabels">all</option>
+        <option name="charting.axisY.maximumNumber">100</option>
+        <option name="height">300</option>
+      </chart>
+    </panel>
+    <panel>
+      <chart>
+        <title>Violations Over Time</title>
+        <search>
+          <query>index=opsguard sourcetype="pact:commitment" passed=false earliest=$time_range.earliest$ latest=$time_range.latest$
+| timechart span=30m count by commitment_name</query>
+        </search>
+        <option name="charting.chart">line</option>
+        <option name="charting.seriesColors">[0xf26a35,0xc84f0a,0xff6b6b,0xffa500,0xff4444]</option>
+        <option name="charting.axisTitleX.text">Time</option>
+        <option name="charting.axisTitleY.text">Violation Count</option>
+        <option name="height">300</option>
+      </chart>
+    </panel>
+  </row>
+
+  <row>
+    <panel>
+      <single>
+        <title>Contract Coverage % (Most Recent Run)</title>
+        <search>
+          <query>index=opsguard sourcetype="pact:coverage" earliest=$time_range.earliest$ latest=$time_range.latest$
+| sort -_time
+| head 1
+| table coverage_percentage</query>
+        </search>
+        <option name="field">coverage_percentage</option>
+        <option name="unit">%</option>
+        <option name="underLabel">of tool calls covered by commitments</option>
+        <option name="colorBy">value</option>
+        <option name="colorMode">block</option>
+        <option name="rangeColors">["0xdc4e41","0xf8be34","0x53c57a"]</option>
+        <option name="rangeValues">[50,80]</option>
+        <option name="height">200</option>
+      </single>
+    </panel>
+    <panel>
+      <single>
+        <title>Total Executions Today</title>
+        <search>
+          <query>index=opsguard sourcetype="pact:commitment" earliest=$time_range.earliest$ latest=$time_range.latest$
+| dedup execution_id
+| stats count as executions</query>
+        </search>
+        <option name="field">executions</option>
+        <option name="underLabel">agent executions</option>
+        <option name="height">200</option>
+      </single>
+    </panel>
+    <panel>
+      <table>
+        <title>Uncovered Tool Calls (Most Recent Run)</title>
+        <search>
+          <query>index=opsguard sourcetype="pact:coverage" earliest=$time_range.earliest$ latest=$time_range.latest$
+| sort -_time
+| head 1
+| mvexpand uncovered_tool_calls
+| table uncovered_tool_calls</query>
+        </search>
+        <option name="count">10</option>
+        <option name="height">200</option>
+      </table>
+    </panel>
+  </row>
+
+  <row>
+    <panel>
+      <table>
+        <title>Recent Violations with Auto-Generated SPL</title>
+        <search>
+          <query>index=opsguard sourcetype="pact:commitment" passed=false earliest=$time_range.earliest$ latest=$time_range.latest$
+| table _time, commitment_name, violation_detail, execution_id, investigation_spl
+| sort -_time
+| head 20</query>
+        </search>
+        <option name="count">20</option>
+        <option name="wrap">true</option>
+        <option name="height">350</option>
+      </table>
+    </panel>
+  </row>
+
+</form>

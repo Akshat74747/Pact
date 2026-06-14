@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+google-generativeai
+google-adk
+requests
+httpx
+python-dotenv
+pydantic
+tenacity

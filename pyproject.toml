@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pact"
+version = "0.1.0"
+description = "Contract-based behavioral observability for AI agents"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.11"
+dependencies = [
+    "google-adk",
+    "ddtrace",
+    "tenacity",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "pytest-cov"]
+nli = ["transformers>=4.30.0", "torch>=2.0.0"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["pact*"]

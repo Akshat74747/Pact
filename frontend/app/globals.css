@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-space-grotesk);
+
+  --color-morph-black: #050505;
+  --color-morph-dark: #0A0A0A;
+  --color-morph-panel: #121212;
+  --color-morph-border: #27272A;
+  --color-morph-white: #F4F4F5;
+  --color-morph-blue: #3B82F6;
+  --color-morph-blueDim: #2563EB;
+}
+
+body {
+  background-color: #050505;
+  color: #F4F4F5;
+  font-family: var(--font-inter), sans-serif;
+  overflow-x: hidden;
+}
+
+.font-display {
+  font-family: var(--font-space-grotesk), sans-serif;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #050505;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #27272A;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3B82F6;
+}
+
+/* Hide scrollbar utility */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Fade-in for staggered tool calls and revealed commitment details */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.25s ease forwards;
+}
+
+/* Pulsing red border glow for violation cards */
+@keyframes pulseBorder {
+  0%, 100% { box-shadow: 0 0 12px rgba(239, 68, 68, 0.18); }
+  50%       { box-shadow: 0 0 28px rgba(239, 68, 68, 0.38); }
+}
+
+.animate-pulse-border {
+  animation: pulseBorder 2s ease-in-out infinite;
+}
