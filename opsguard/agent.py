@@ -105,13 +105,7 @@ def create_opsguard_agent(contract, execution, use_bad_prompt: bool = False):
         print(f"[OpsGuard] << {tool.name} = {str(tool_response)[:120]}")
 
     def after_agent_callback(callback_context: CallbackContext):
-        print("[OpsGuard] Agent finished — running contract verification...")
-        results = execution.verify()
-        for r in results:
-            status = r.status.value.upper()
-            print(f"  [{status}] {r.commitment_name}")
-            if r.status.value not in ("pass", "skipped"):
-                print(f"         >> {r.actual}")
+        print("[OpsGuard] Agent finished — verification will run after runner completes.")
 
     agent = Agent(
         name="opsguard",
@@ -168,6 +162,12 @@ Investigate and respond to this incident."""
                         response_text += part.text
 
         results = execution.verify()
+        print("[OpsGuard] Contract verification complete:")
+        for r in results:
+            status = r.status.value.upper()
+            print(f"  [{status}] {r.commitment_name}")
+            if r.status.value not in ("pass", "skipped"):
+                print(f"         >> {r.actual}")
 
         # Send each result to Splunk HEC and collect any generated SPLs
         observer = contract.observer
