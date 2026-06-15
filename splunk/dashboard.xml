@@ -18,7 +18,7 @@
         <title>Commitment Pass Rate (Last 24h)</title>
         <search>
           <query>index=opsguard sourcetype="pact:commitment" earliest=$time_range.earliest$ latest=$time_range.latest$
-| stats count as total, sum(eval(if(passed=true,1,0))) as passed by commitment_name
+| stats count as total, sum(eval(if(passed="true" OR passed=1,1,0))) as passed by commitment_name
 | eval pass_rate=round((passed/total)*100,2)
 | table commitment_name, pass_rate
 | sort -pass_rate</query>
@@ -36,7 +36,7 @@
       <chart>
         <title>Violations Over Time</title>
         <search>
-          <query>index=opsguard sourcetype="pact:commitment" passed=false earliest=$time_range.earliest$ latest=$time_range.latest$
+          <query>index=opsguard sourcetype="pact:commitment" (passed="false" OR passed=0) earliest=$time_range.earliest$ latest=$time_range.latest$
 | timechart span=30m count by commitment_name</query>
         </search>
         <option name="charting.chart">line</option>
@@ -105,7 +105,7 @@
       <table>
         <title>Recent Violations with Auto-Generated SPL</title>
         <search>
-          <query>index=opsguard sourcetype="pact:commitment" passed=false earliest=$time_range.earliest$ latest=$time_range.latest$
+          <query>index=opsguard sourcetype="pact:commitment" (passed="false" OR passed=0) earliest=$time_range.earliest$ latest=$time_range.latest$
 | table _time, commitment_name, violation_detail, execution_id, investigation_spl
 | sort -_time
 | head 20</query>
