@@ -219,7 +219,7 @@ class SplunkObservability(Observer):
                     self.hec_url,
                     headers=self.headers,
                     json=payload,
-                    timeout=3,
+                    timeout=5,
                     verify=False  # self-signed cert on local Splunk
                 )
                 response.raise_for_status()
