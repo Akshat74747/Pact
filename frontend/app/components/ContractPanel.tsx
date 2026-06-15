@@ -33,8 +33,17 @@ const STATUS_DOT: Record<string, string> = {
   violation: "bg-red-500",
   critical: "bg-red-600",
   warning: "bg-yellow-500",
-  skipped: "bg-zinc-600",
+  skipped: "bg-yellow-600",
   verification_error: "bg-orange-500",
+};
+
+const STATUS_LABEL: Record<string, { text: string; color: string } | null> = {
+  pass: null,
+  violation: null,
+  critical: null,
+  warning: null,
+  skipped: { text: "SKIPPED", color: "text-yellow-500/80 bg-yellow-900/20 border border-yellow-700/30" },
+  verification_error: { text: "ERROR", color: "text-orange-400/80 bg-orange-900/20 border border-orange-700/30" },
 };
 
 const CARD_BORDER: Record<string, string> = {
@@ -115,9 +124,16 @@ export default function ContractPanel({ commitments, results, isChecking = false
                 <div className={`w-2 h-2 rounded-full flex-shrink-0 transition-colors duration-300 ${dotClass}`} />
                 <span className="font-mono text-xs text-morph-white/80 truncate">{c.name}</span>
               </div>
-              <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium flex-shrink-0 ${badge.color}`}>
-                {badge.label}
-              </span>
+              <div className="flex items-center gap-1.5 flex-shrink-0">
+                {result && isRevealed && STATUS_LABEL[status] && (
+                  <span className={`text-[9px] px-1.5 py-0.5 rounded font-mono font-medium ${STATUS_LABEL[status]!.color}`}>
+                    {STATUS_LABEL[status]!.text}
+                  </span>
+                )}
+                <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${badge.color}`}>
+                  {badge.label}
+                </span>
+              </div>
             </div>
             <p className="text-xs text-morph-white/50 pl-4">{c.terms}</p>
             {result && isRevealed && status !== "pass" && status !== "pending" && status !== "skipped" && (

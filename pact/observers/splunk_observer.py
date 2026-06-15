@@ -1,9 +1,13 @@
 import requests
 import time
+import json
+import os
 from datetime import datetime
 from typing import Optional
 from pact.observers.base import Observer
 from pact.types import ToolCall
+
+_FALLBACK_LOG = os.path.join(os.path.dirname(__file__), "..", "..", "splunk_fallback.jsonl")
 
 
 class SplunkObservability(Observer):
@@ -207,15 +211,33 @@ class SplunkObservability(Observer):
     # ── Transport ─────────────────────────────────────────────────────────────
 
     def _send(self, payload: dict):
-        """Send event to Splunk HEC. Fail silently to not interrupt agent execution."""
+        """Send event to Splunk HEC with retries. Falls back to local JSONL file if all attempts fail."""
+        last_error = None
+        for attempt in range(3):
+            try:
+                response = requests.post(
+                    self.hec_url,
+                    headers=self.headers,
+                    json=payload,
+                    timeout=5,
+                    verify=False  # self-signed cert on local Splunk
+                )
+                response.raise_for_status()
+                return
+            except Exception as e:
+                last_error = e
+                if attempt < 2:
+                    time.sleep(2 ** attempt)  # 1s, 2s
+
+        print(f"[Pact] Splunk HEC unavailable after 3 attempts: {last_error}")
+        self._write_fallback(payload)
+
+    def _write_fallback(self, payload: dict):
+        """Append failed HEC payload to a local JSONL file for later replay."""
         try:
-            response = requests.post(
-                self.hec_url,
-                headers=self.headers,
-                json=payload,
-                timeout=5,
-                verify=False  # self-signed cert on local Splunk
-            )
-            response.raise_for_status()
+            path = os.path.abspath(_FALLBACK_LOG)
+            with open(path, "a", encoding="utf-8") as f:
+                f.write(json.dumps(payload) + "\n")
+            print(f"[Pact] Event saved to fallback log: {path}")
         except Exception as e:
-            print(f"[Pact] Splunk HEC send failed: {e}")
+            print(f"[Pact] Fallback write also failed: {e}")

@@ -26,6 +26,9 @@ frontend/node_modules/
 frontend/.next/
 frontend/out/
 
+# Splunk fallback log (written when HEC is unreachable)
+splunk_fallback.jsonl
+
 # Misc
 .DS_Store
 *.log

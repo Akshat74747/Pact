@@ -134,6 +134,9 @@ export default function Home() {
       (r) => r.status === "violation" || r.status === "critical"
     ) ?? [];
 
+  const skippedCount =
+    result?.commitment_results.filter((r) => r.status === "skipped").length ?? 0;
+
   const coveragePct = result?.coverage_pct ?? 0;
   const uncovered = result?.uncovered_tool_calls ?? [];
 
@@ -260,6 +263,7 @@ export default function Home() {
               <ResultBanner
                 totalCommitments={result.commitment_results.length}
                 violationCount={violations.length}
+                skippedCount={skippedCount}
                 firstViolationSpl={firstViolationSpl}
               />
             )}
