@@ -25,7 +25,15 @@ class DeterministicVerifier:
 
     def __call__(self, execution, terms: str) -> IntermediateVerificationResult:
         tool_names = [tc.tool_name for tc in execution.tool_calls]
-        cover = list(range(len(tool_names)))
+
+        # Only claim coverage over tool calls this commitment actually checks
+        relevant: set[str] = set()
+        for before, after in self.required_sequence:
+            relevant.add(before)
+            relevant.add(after)
+        relevant.update(self.max_occurrences.keys())
+        relevant.update(self.forbidden_tools)
+        cover = [i for i, name in enumerate(tool_names) if name in relevant]
 
         # Check required ordering pairs
         for before, after in self.required_sequence:
