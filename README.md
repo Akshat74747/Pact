@@ -113,7 +113,7 @@ Pact does not lock you into any agent framework. The boundary is clear: before t
 
 ---
 
-## Architecture
+## Architecture - Please find in-depth architecture in ARCHITECTURE.md
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
@@ -377,7 +377,8 @@ Pact/
             ├── CoverageChart.tsx # Coverage gauge + uncovered tools
             └── ResultBanner.tsx  # Run summary (pass / skipped / violation)
 ```
-
+---
+YouTube Demo- https://www.youtube.com/watch?v=yD0uZF5sWpU
 ---
 
 ## License
