@@ -173,7 +173,11 @@ Investigate and respond to this incident."""
         observer = contract.observer
         tool_sequence = [tc.tool_name for tc in execution.tool_calls]
         for r in results:
-            passed = r.status.value in ("pass", "skipped")
+            # Don't report skipped commitments — verifier unavailable, not a pass or fail
+            if r.status.value == "skipped":
+                continue
+
+            passed = r.status.value == "pass"
             verifier_type = "deterministic" if "DeterministicVerifier" in str(type(
                 next((c.verifier for c in contract.commitments if c.name == r.commitment_name), None)
             )) else ("semantic" if r.commitment_name == "false_positive_validation" else "nli")
