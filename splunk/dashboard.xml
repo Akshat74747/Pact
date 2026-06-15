@@ -88,8 +88,11 @@
           <query>index=opsguard sourcetype="pact:coverage" earliest=$time_range.earliest$ latest=$time_range.latest$
 | sort -_time
 | head 1
-| mvexpand uncovered_tool_calls
-| table uncovered_tool_calls</query>
+| spath output=uncovered_tools "uncovered_tool_calls{}"
+| mvexpand uncovered_tools
+| eval uncovered_tools=if(isnull(uncovered_tools) OR uncovered_tools="", "All tool calls covered", uncovered_tools)
+| table uncovered_tools
+| rename uncovered_tools as "Tool Call"</query>
         </search>
         <option name="count">10</option>
         <option name="height">200</option>
